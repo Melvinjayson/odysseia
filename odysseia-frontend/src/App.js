@@ -2,25 +2,24 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+jsx
+import React from 'react';
+import WelcomeScreen from './components/WelcomeScreen';
+import VoiceCaptureScreen from './components/VoiceCaptureScreen';
+import ResultsScreen from './components/ResultsScreen';
+// import './App.css'; // Keep if you have custom styles
+
 function App() {
+  // For demo, render WelcomeScreen. Add routing or state to switch screens as needed.
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <WelcomeScreen />
+      {/* <VoiceCaptureScreen /> */}
+      {/* <ResultsScreen /> */}
     </div>
   );
 }
 
 export default App;
+
+
