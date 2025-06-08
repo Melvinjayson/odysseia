@@ -1,27 +1,45 @@
 {
-  "name": "odysseia-frontend",
-  "version": "1.0.0",
+  "name": "personal-odyssey-mobile",
+  "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
   "dependencies": {
-    "autoprefixer": "^10.4.21",
-    "next": "14.1.0",
-    "postcss": "^8.5.4",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "tailwindcss": "^4.1.8"
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
+    "cra-template-pwa": "2.0.0",
+    "framer-motion": "^12.16.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.30.1",
+    "react-scripts": "^0.0.0",
+    "web-vitals": "^5.0.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
-    "@types/node": "20.4.2",
-    "@types/react": "18.2.14",
-    "@types/react-dom": "18.2.7",
-    "eslint": "8.56.0",
-    "eslint-config-next": "14.1.0",
-    "typescript": "5.2.2"
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^3.3.3"
   }
 }
