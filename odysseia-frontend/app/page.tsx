@@ -44,6 +44,22 @@ type ApplicationFlow = {
   lastAction: string;
 };
 
+type MeshNode = {
+  id: string;
+  region: string;
+  status: "online" | "degraded" | "offline";
+  load: number;
+  capability: string;
+};
+
+type DataAnchor = {
+  id: string;
+  location: string;
+  status: "active" | "syncing";
+  latency: string;
+  assurance: string;
+};
+
 const fallbackTasks: Task[] = [
   {
     id: "sesame-01",
@@ -146,6 +162,47 @@ const fallbackApplications: ApplicationFlow[] = [
   },
 ];
 
+const fallbackMeshNodes: MeshNode[] = [
+  {
+    id: "edge-paris",
+    region: "Paris",
+    status: "online",
+    load: 34,
+    capability: "Voice + chat",
+  },
+  {
+    id: "edge-nairobi",
+    region: "Nairobi",
+    status: "degraded",
+    load: 68,
+    capability: "Reveta scoring",
+  },
+  {
+    id: "edge-mexico",
+    region: "Mexico City",
+    status: "online",
+    load: 52,
+    capability: "Odysseia arcs",
+  },
+];
+
+const fallbackAnchors: DataAnchor[] = [
+  {
+    id: "anchor-01",
+    location: "Local secure enclave",
+    status: "active",
+    latency: "22 ms",
+    assurance: "Persona + memory stay sovereign",
+  },
+  {
+    id: "anchor-02",
+    location: "Community IPFS mirror",
+    status: "syncing",
+    latency: "140 ms",
+    assurance: "Reveta + Sesame task traces verified",
+  },
+];
+
 export default function Home() {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -174,6 +231,10 @@ export default function Home() {
   const [applications, setApplications] = useState<ApplicationFlow[]>(fallbackApplications);
   const [loadingVoice, setLoadingVoice] = useState(false);
   const [personaSaved, setPersonaSaved] = useState(false);
+  const [meshEnabled, setMeshEnabled] = useState(true);
+  const [dataResidency, setDataResidency] = useState("Local-first");
+  const [meshNodes, setMeshNodes] = useState<MeshNode[]>(fallbackMeshNodes);
+  const [anchors, setAnchors] = useState<DataAnchor[]>(fallbackAnchors);
 
   const emotionPalette: Record<ChatMessage["emotion"], string> = useMemo(
     () => ({
@@ -202,6 +263,8 @@ export default function Home() {
     fetchOrFallback<Opportunity[]>("/api/orchestration/reveta", fallbackOpportunities, setOpportunities);
     fetchOrFallback<Arc[]>("/api/orchestration/arcs", fallbackArcs, setArcs);
     fetchOrFallback<ApplicationFlow[]>("/api/orchestration/applications", fallbackApplications, setApplications);
+    fetchOrFallback<MeshNode[]>("/api/orchestration/mesh", fallbackMeshNodes, setMeshNodes);
+    fetchOrFallback<DataAnchor[]>("/api/orchestration/anchors", fallbackAnchors, setAnchors);
   }, []);
 
   useEffect(() => {
@@ -272,7 +335,7 @@ export default function Home() {
             <p className="text-sm uppercase tracking-[0.3em] text-indigo-200">Venus experience</p>
             <h1 className="text-4xl md:text-5xl font-black text-white drop-shadow-sm">Real-time, emotion-aware orchestration</h1>
             <p className="mt-3 text-indigo-100/80 max-w-2xl">
-              Voice-first guidance, Sesame tasking, Reveta matches, and Odysseia arcs—stitched into a single responsive console with narrative tone intact.
+              Voice-first guidance, Sesame tasking, Reveta matches, and Odysseia arcs—stitched into a single responsive console with narrative tone intact and a sovereign mesh that keeps data close.
             </p>
           </div>
           <div className="flex items-center gap-3 bg-black/30 border border-indigo-900/30 rounded-2xl px-4 py-3">
@@ -386,6 +449,114 @@ export default function Home() {
             </button>
             {personaSaved && <p className="text-xs text-emerald-200">Persona synced with memory orchestrator.</p>}
           </form>
+        </div>
+      </section>
+
+      <section
+        id="decentralized"
+        className="grid grid-cols-1 xl:grid-cols-3 gap-6 rounded-3xl border border-indigo-900/40 bg-gradient-to-br from-slate-95
+0 via-indigo-950 to-slate-900 shadow-2xl p-6"
+      >
+        <div className="xl:col-span-2 space-y-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-indigo-200">Decentralized orchestration</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">Mesh control + sovereignty</h2>
+              <p className="text-sm text-indigo-100/80 max-w-2xl">
+                Keep Venus responsive while honoring local-first storage, mirrored anchors, and shared execution across regions.
+              </p>
+            </div>
+            <div className="flex gap-3" role="group" aria-label="Mesh configuration">
+              <button
+                type="button"
+                onClick={() => setMeshEnabled(prev => !prev)}
+                aria-pressed={meshEnabled}
+                className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold transition focus-visible:outline focus-vi
+sible:ring-2 focus-visible:ring-pink-400 ${
+                  meshEnabled
+                    ? "bg-pink-900/30 border-pink-700 text-pink-100"
+                    : "bg-slate-900 border-slate-800 text-slate-100"
+                }`}
+              >
+                {meshEnabled ? "Mesh active" : "Mesh paused"}
+                <p className="text-[11px] font-normal opacity-80">Autonomous routing across Venus edges</p>
+              </button>
+              <label className="block text-sm text-indigo-100" htmlFor="residency">
+                <span className="sr-only">Data residency preference</span>
+                <select
+                  id="residency"
+                  value={dataResidency}
+                  onChange={e => setDataResidency(e.target.value)}
+                  className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm focus-visible:outline focus-visibl
+e:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <option>Local-first</option>
+                  <option>Hybrid mesh</option>
+                  <option>Cloud assist</option>
+                </select>
+                <p className="mt-1 text-[11px] text-indigo-100/70">Sovereignty lane: {dataResidency}</p>
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3" role="list" aria-label="Mesh nodes">
+            {meshNodes.map(node => (
+              <div key={node.id} className="rounded-2xl border border-slate-800 bg-black/30 px-4 py-3 space-y-2" role="listitem">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-white">{node.region}</p>
+                  <span
+                    className={`text-[11px] px-2 py-1 rounded-full border ${
+                      node.status === "online"
+                        ? "border-emerald-700 bg-emerald-900/30 text-emerald-100"
+                        : node.status === "degraded"
+                          ? "border-amber-700 bg-amber-900/30 text-amber-100"
+                          : "border-slate-700 bg-slate-900 text-slate-100"
+                    }`}
+                  >
+                    {node.status}
+                  </span>
+                </div>
+                <p className="text-xs text-indigo-100/80">{node.capability}</p>
+                <div className="flex items-center justify-between text-[11px] text-indigo-200/80">
+                  <span>Node · {node.id}</span>
+                  <span>Load · {node.load}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-indigo-900/40 bg-slate-950/80 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-white">Anchors & proofs</h3>
+            <span className="text-[11px] text-indigo-200">Decentralized storage</span>
+          </div>
+          <p className="text-sm text-indigo-100/80">
+            Routing keeps your persona, memory, and task traces pinned to local or community-owned anchors.
+          </p>
+          <div className="space-y-3" role="list" aria-label="Anchors">
+            {anchors.map(anchor => (
+              <div key={anchor.id} className="rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3" role="listitem">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-white">{anchor.location}</p>
+                  <span
+                    className={`text-[11px] px-2 py-1 rounded-full border ${
+                      anchor.status === "active"
+                        ? "border-emerald-700 bg-emerald-900/30 text-emerald-100"
+                        : "border-amber-700 bg-amber-900/30 text-amber-100"
+                    }`}
+                  >
+                    {anchor.status}
+                  </span>
+                </div>
+                <p className="text-xs text-indigo-100/80">{anchor.assurance}</p>
+                <div className="flex items-center justify-between text-[11px] text-indigo-200/80">
+                  <span>Anchor · {anchor.id}</span>
+                  <span>Latency · {anchor.latency}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
