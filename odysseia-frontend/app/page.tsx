@@ -58,6 +58,22 @@ export default function Home() {
   const [dataResidency, setDataResidency] = useState("Local-first");
   const [meshNodes, setMeshNodes] = useState<MeshNode[]>(fallbackMeshNodes);
   const [anchors, setAnchors] = useState<DataAnchor[]>(fallbackAnchors);
+  const [resourceStatus, setResourceStatus] = useState<Record<string, "loading" | "live" | "fallback" | "error">>({
+    tasks: "loading",
+    opportunities: "loading",
+    arcs: "loading",
+    applications: "loading",
+    mesh: "loading",
+    anchors: "loading",
+  });
+  const [resourceErrors, setResourceErrors] = useState<Record<string, string | null>>({
+    tasks: null,
+    opportunities: null,
+    arcs: null,
+    applications: null,
+    mesh: null,
+    anchors: null,
+  });
 
   const emotionPalette: Record<ChatMessage["emotion"], string> = useMemo(
     () => ({
@@ -71,23 +87,33 @@ export default function Home() {
   );
 
   useEffect(() => {
-    const fetchOrFallback = async <T,>(url: string, fallback: T, setter: (value: T) => void) => {
+    const fetchOrFallback = async <T,>(
+      key: keyof typeof resourceStatus,
+      url: string,
+      fallback: T,
+      setter: (value: T) => void,
+    ) => {
       try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("bad status");
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Bad status ${res.status}`);
         const data = (await res.json()) as T;
         setter(data);
-      } catch {
+        setResourceStatus(prev => ({ ...prev, [key]: "live" }));
+        setResourceErrors(prev => ({ ...prev, [key]: null }));
+      } catch (error) {
+        const err = error instanceof Error ? error.message : "Unknown error";
         setter(fallback);
+        setResourceStatus(prev => ({ ...prev, [key]: "fallback" }));
+        setResourceErrors(prev => ({ ...prev, [key]: err }));
       }
     };
 
-    fetchOrFallback<Task[]>("/api/orchestration/sesame", fallbackTasks, setTasks);
-    fetchOrFallback<Opportunity[]>("/api/orchestration/reveta", fallbackOpportunities, setOpportunities);
-    fetchOrFallback<Arc[]>("/api/orchestration/arcs", fallbackArcs, setArcs);
-    fetchOrFallback<ApplicationFlow[]>("/api/orchestration/applications", fallbackApplications, setApplications);
-    fetchOrFallback<MeshNode[]>("/api/orchestration/mesh", fallbackMeshNodes, setMeshNodes);
-    fetchOrFallback<DataAnchor[]>("/api/orchestration/anchors", fallbackAnchors, setAnchors);
+    fetchOrFallback<Task[]>("tasks", "/api/orchestration/sesame", fallbackTasks, setTasks);
+    fetchOrFallback<Opportunity[]>("opportunities", "/api/orchestration/reveta", fallbackOpportunities, setOpportunities);
+    fetchOrFallback<Arc[]>("arcs", "/api/orchestration/arcs", fallbackArcs, setArcs);
+    fetchOrFallback<ApplicationFlow[]>("applications", "/api/orchestration/applications", fallbackApplications, setApplications);
+    fetchOrFallback<MeshNode[]>("mesh", "/api/orchestration/mesh", fallbackMeshNodes, setMeshNodes);
+    fetchOrFallback<DataAnchor[]>("anchors", "/api/orchestration/anchors", fallbackAnchors, setAnchors);
   }, []);
 
   useEffect(() => {
@@ -167,6 +193,34 @@ export default function Home() {
       setSavingPersona(false);
       setTimeout(() => setSaveMessage(null), 4000);
     }
+  };
+
+  const statusBadge = (key: keyof typeof resourceStatus) => {
+    const state = resourceStatus[key];
+    const color =
+      state === "live"
+        ? "bg-emerald-900/40 text-emerald-100 border-emerald-700/50"
+        : state === "fallback"
+          ? "bg-amber-900/40 text-amber-100 border-amber-700/50"
+          : state === "error"
+            ? "bg-red-900/40 text-red-100 border-red-700/50"
+            : "bg-slate-900/60 text-slate-200 border-slate-700/50";
+
+    const label =
+      state === "live"
+        ? "live"
+        : state === "fallback"
+          ? "fallback"
+          : state === "error"
+            ? "error"
+            : "loading";
+
+    return (
+      <span className={`text-[11px] px-2 py-1 rounded-full border ${color} inline-flex items-center gap-1`}>
+        <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
+        {label}
+      </span>
+    );
   };
 
   return (
@@ -318,7 +372,8 @@ export default function Home() {
                 Keep Venus responsive while honoring local-first storage, mirrored anchors, and shared execution across regions.
               </p>
             </div>
-            <div className="flex gap-3" role="group" aria-label="Mesh configuration">
+            <div className="flex items-center gap-3" role="group" aria-label="Mesh configuration">
+              {statusBadge("mesh")}
               <button
                 type="button"
                 onClick={() => setMeshEnabled(prev => !prev)}
@@ -379,10 +434,21 @@ e:ring-2 focus-visible:ring-indigo-400"
         </div>
 
         <div className="space-y-3 rounded-2xl border border-indigo-900/40 bg-slate-950/80 p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-white">Anchors & proofs</h3>
-            <span className="text-[11px] text-indigo-200">Decentralized storage</span>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xl font-bold text-white">Anchors & proofs</h3>
+              <span className="text-[11px] text-indigo-200">Decentralized storage</span>
+            </div>
+            {statusBadge("anchors")}
           </div>
+          {resourceStatus.anchors !== "live" && resourceErrors.anchors && (
+            <div
+              className="rounded-xl border border-amber-800/60 bg-amber-900/30 px-3 py-2 text-[11px] text-amber-100"
+              role="status"
+            >
+              {`Using fallback anchors: ${resourceErrors.anchors}`}
+            </div>
+          )}
           <p className="text-sm text-indigo-100/80">
             Routing keeps your persona, memory, and task traces pinned to local or community-owned anchors.
           </p>
@@ -457,8 +523,13 @@ e:ring-2 focus-visible:ring-indigo-400"
         </div>
 
         <div className="rounded-3xl border border-indigo-900/40 bg-gradient-to-b from-indigo-950 via-slate-950 to-slate-950 shadow-xl p-6 space-y-4">
-          <h3 className="text-xl font-bold text-white">Narrative guidance</h3>
-          <p className="text-sm text-indigo-100/80">Odysseia arcs that adapt as Venus hears you.</p>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xl font-bold text-white">Narrative guidance</h3>
+              <p className="text-sm text-indigo-100/80">Odysseia arcs that adapt as Venus hears you.</p>
+            </div>
+            {statusBadge("arcs")}
+          </div>
           <div className="space-y-3" id="arcs" role="list" aria-label="Odysseia arcs">
             {arcs.map(arc => (
               <div key={arc.id} className="rounded-2xl border border-indigo-900/40 bg-black/30 px-4 py-3" role="listitem">
@@ -478,7 +549,10 @@ e:ring-2 focus-visible:ring-indigo-400"
         <div className="lg:col-span-2 rounded-3xl border border-indigo-900/40 bg-slate-950/80 shadow-xl p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">Sesame agent execution</h2>
-            <span className="text-xs text-indigo-200">Live tasks</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-indigo-200">Live tasks</span>
+              {statusBadge("tasks")}
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3" role="list" aria-label="Sesame tasks">
             {tasks.map(task => (
@@ -533,7 +607,10 @@ e:ring-2 focus-visible:ring-indigo-400"
         <div className="xl:col-span-2 rounded-3xl border border-indigo-900/40 bg-slate-950/80 shadow-xl p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">Reveta opportunity matching</h2>
-            <span className="text-xs text-indigo-200">Curated in real time</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-indigo-200">Curated in real time</span>
+              {statusBadge("opportunities")}
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="list" aria-label="Opportunities">
             {opportunities.map(opp => (
@@ -562,8 +639,13 @@ e:ring-2 focus-visible:ring-indigo-400"
         </div>
 
         <div className="rounded-3xl border border-indigo-900/40 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 shadow-xl p-6 space-y-3">
-          <h3 className="text-xl font-bold text-white">Automated applications</h3>
-          <p className="text-sm text-indigo-100/80">Venus can ship updates to UNDP or Notion on your behalf.</p>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xl font-bold text-white">Automated applications</h3>
+              <p className="text-sm text-indigo-100/80">Venus can ship updates to UNDP or Notion on your behalf.</p>
+            </div>
+            {statusBadge("applications")}
+          </div>
           <div className="space-y-3" role="list" aria-label="Application flows">
             {applications.map(flow => (
               <div key={flow.id} className="rounded-2xl border border-slate-800 bg-black/30 px-4 py-3" role="listitem">
