@@ -1,49 +1,38 @@
-import './styles/globals.css'
 import "./styles/globals.css";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-export const metadata = {
-  title: "OΔYSSEIA",
-  description: "Odysseia: Your journey, your story.",
+export const metadata: Metadata = {
+  title: "OΔYSSEIA Venus",
+  description: "Odysseia Venus: multi-agent orchestration for guided journeys.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100">
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-gray-900/95 via-gray-800/95 to-gray-900/80 border-t border-gray-700 flex justify-around items-center py-2 px-2 md:hidden rounded-t-2xl shadow-2xl">
-          <a href="/" className="flex flex-col items-center text-gray-400 hover:text-indigo-400 transition">
-            <span className="material-icons text-2xl mb-1">home</span>
-            <span className="text-xs">Home</span>
-          </a>
-          <a href="/dashboard" className="flex flex-col items-center text-gray-400 hover:text-indigo-400 transition">
-            <span className="material-icons text-2xl mb-1">dashboard</span>
-            <span className="text-xs">Dashboard</span>
-          </a>
-          <a href="/odyssey-starter" className="flex flex-col items-center text-gray-400 hover:text-indigo-400 transition">
-            <span className="material-icons text-2xl mb-1">auto_awesome</span>
-            <span className="text-xs">Odyssey</span>
-          </a>
-          <a href="/login" className="flex flex-col items-center text-gray-400 hover:text-indigo-400 transition">
-            <span className="material-icons text-2xl mb-1">person</span>
-            <span className="text-xs">Login</span>
+      <body className="min-h-screen flex flex-col bg-gradient-to-b from-gray-950 via-slate-950 to-gray-900 text-gray-100">
+        <nav className="sticky top-0 z-50 backdrop-blur bg-black/60 border-b border-indigo-900/40 px-4 md:px-10 py-4 flex items-center justify-between shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-3xl font-extrabold text-indigo-300 tracking-tight">OΔYSSEIA</span>
+            <span className="text-xs bg-indigo-900 text-indigo-100 px-2 py-1 rounded-full">Venus</span>
+          </div>
+          <div className="hidden md:flex items-center gap-6 text-sm">
+            <a href="#voice" className="hover:text-indigo-200 transition">Voice</a>
+            <a href="#chat" className="hover:text-indigo-200 transition">Chat</a>
+            <a href="#agents" className="hover:text-indigo-200 transition">Sesame</a>
+            <a href="#reveta" className="hover:text-indigo-200 transition">Opportunities</a>
+            <a href="#arcs" className="hover:text-indigo-200 transition">Odysseia Arcs</a>
+          </div>
+          <a
+            className="text-xs font-semibold px-3 py-1 rounded-full border border-indigo-700 text-indigo-100 bg-indigo-900/40 hover:bg-indigo-800/60 transition"
+            href="/login"
+          >
+            Access Console
           </a>
         </nav>
-        <nav className="hidden md:flex bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700 px-8 py-4 justify-between items-center rounded-b-2xl shadow-xl">
-          <div className="flex items-center space-x-2">
-            <span className="text-3xl font-extrabold text-indigo-400 tracking-tight">OΔYSSEIA</span>
-            <span className="text-xs bg-indigo-900 text-indigo-200 px-2 py-1 rounded">MVP</span>
-          </div>
-          <div className="space-x-8">
-            <a href="/" className="text-gray-300 hover:text-indigo-400 font-medium transition">Home</a>
-            <a href="/dashboard" className="text-gray-300 hover:text-indigo-400 font-medium transition">Dashboard</a>
-            <a href="/odyssey-starter" className="text-gray-300 hover:text-indigo-400 font-medium transition">Odyssey Starter</a>
-            <a href="/login" className="text-gray-300 hover:text-indigo-400 font-medium transition">Login</a>
-          </div>
-        </nav>
-        <main className="flex-1 w-full max-w-2xl mx-auto px-2 pt-8 pb-24 md:pb-8 md:pt-12">{children}</main>
-        <footer className="bg-gradient-to-t from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700 py-4 text-center text-xs text-gray-500 mt-8 rounded-t-2xl shadow-inner">
-          © 2025 OΔYSSEIA. All rights reserved. <a href="https://github.com/odysseia" className="text-indigo-400 hover:underline ml-2">GitHub</a>
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-8 pb-20 pt-10 space-y-12">{children}</main>
+        <footer className="bg-gradient-to-t from-gray-900 via-slate-900 to-gray-950 border-t border-indigo-900/40 py-4 text-center text-xs text-gray-400 mt-10">
+          © 2025 OΔYSSEIA Venus. Crafted for responsive, accessible journeys.
         </footer>
       </body>
     </html>
