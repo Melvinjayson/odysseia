@@ -2,6 +2,21 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  fallbackAnchors,
+  fallbackApplications,
+  fallbackArcs,
+  fallbackMeshNodes,
+  fallbackOpportunities,
+  fallbackTasks,
+  type ApplicationFlow,
+  type Arc,
+  type DataAnchor,
+  type MeshNode,
+  type Opportunity,
+  type Task,
+} from "../lib/orchestrationData";
+
 type ChatMessage = {
   sender: "You" | "Venus";
   text: string;
@@ -9,199 +24,6 @@ type ChatMessage = {
   intent: string;
   time: string;
 };
-
-type Task = {
-  id: string;
-  name: string;
-  status: "waiting" | "running" | "complete";
-  eta: string;
-  impact: string;
-};
-
-type Opportunity = {
-  id: string;
-  title: string;
-  org: string;
-  fitScore: number;
-  summary: string;
-  tags: string[];
-};
-
-type Arc = {
-  id: string;
-  title: string;
-  stage: string;
-  guidance: string;
-  emphasis: string;
-};
-
-type ApplicationFlow = {
-  id: string;
-  name: string;
-  destination: string;
-  steps: string[];
-  status: "configured" | "in-flight" | "delivered";
-  lastAction: string;
-};
-
-type MeshNode = {
-  id: string;
-  region: string;
-  status: "online" | "degraded" | "offline";
-  load: number;
-  capability: string;
-};
-
-type DataAnchor = {
-  id: string;
-  location: string;
-  status: "active" | "syncing";
-  latency: string;
-  assurance: string;
-};
-
-const fallbackTasks: Task[] = [
-  {
-    id: "sesame-01",
-    name: "Profile vector refresh",
-    status: "running",
-    eta: "45s",
-    impact: "Aligning persona embeddings with live context",
-  },
-  {
-    id: "sesame-02",
-    name: "Signal triage",
-    status: "waiting",
-    eta: "2m",
-    impact: "Prioritizing high-signal threads for Venus guidance",
-  },
-  {
-    id: "sesame-03",
-    name: "Memory stitch",
-    status: "complete",
-    eta: "0s",
-    impact: "Linked recent sessions into persistent narrative",
-  },
-];
-
-const fallbackOpportunities: Opportunity[] = [
-  {
-    id: "reveta-01",
-    title: "UNDP Youth Innovation Fellowship",
-    org: "UNDP",
-    fitScore: 92,
-    summary: "Global social impact residency seeking narrative-first builders.",
-    tags: ["UNDP", "Global", "Impact", "Remote"],
-  },
-  {
-    id: "reveta-02",
-    title: "Notion AI Templates Partner",
-    org: "Notion",
-    fitScore: 88,
-    summary: "Build guided workspaces that ship with emotion-aware copilots.",
-    tags: ["Notion", "Builder", "Templates", "Revenue"],
-  },
-  {
-    id: "reveta-03",
-    title: "City Lab Residency",
-    org: "Civic Futures",
-    fitScore: 79,
-    summary: "Prototype neighborhood-scale storytelling pilots with local partners.",
-    tags: ["Local", "Pilot", "Story", "Field"],
-  },
-];
-
-const fallbackArcs: Arc[] = [
-  {
-    id: "arc-01",
-    title: "Call to Adventure",
-    stage: "Opening",
-    guidance: "Frame your north star, voice what feels unresolved, and let Venus listen.",
-    emphasis: "Attune",
-  },
-  {
-    id: "arc-02",
-    title: "Crossing the Threshold",
-    stage: "Activation",
-    guidance: "Accept a matched opportunity and let Sesame orchestrate first moves.",
-    emphasis: "Commit",
-  },
-  {
-    id: "arc-03",
-    title: "Return with Elixir",
-    stage: "Integration",
-    guidance: "Publish the learnings back into your Notion or UNDP dossier with memory grafts.",
-    emphasis: "Reflect",
-  },
-];
-
-const fallbackApplications: ApplicationFlow[] = [
-  {
-    id: "flow-01",
-    name: "UNDP application",
-    destination: "UNDP Portal",
-    steps: ["Draft narrative", "Collect references", "Submit dossier"],
-    status: "in-flight",
-    lastAction: "Draft synced with Venus guidance",
-  },
-  {
-    id: "flow-02",
-    name: "Notion workspace push",
-    destination: "Notion",
-    steps: ["Assemble page", "Embed memory", "Share with team"],
-    status: "configured",
-    lastAction: "Awaiting approval to publish to shared space",
-  },
-  {
-    id: "flow-03",
-    name: "Arc export",
-    destination: "Odysseia archive",
-    steps: ["Collate transcripts", "Tag emotions", "Publish story"],
-    status: "delivered",
-    lastAction: "Story released with emotion markers",
-  },
-];
-
-const fallbackMeshNodes: MeshNode[] = [
-  {
-    id: "edge-paris",
-    region: "Paris",
-    status: "online",
-    load: 34,
-    capability: "Voice + chat",
-  },
-  {
-    id: "edge-nairobi",
-    region: "Nairobi",
-    status: "degraded",
-    load: 68,
-    capability: "Reveta scoring",
-  },
-  {
-    id: "edge-mexico",
-    region: "Mexico City",
-    status: "online",
-    load: 52,
-    capability: "Odysseia arcs",
-  },
-];
-
-const fallbackAnchors: DataAnchor[] = [
-  {
-    id: "anchor-01",
-    location: "Local secure enclave",
-    status: "active",
-    latency: "22 ms",
-    assurance: "Persona + memory stay sovereign",
-  },
-  {
-    id: "anchor-02",
-    location: "Community IPFS mirror",
-    status: "syncing",
-    latency: "140 ms",
-    assurance: "Reveta + Sesame task traces verified",
-  },
-];
 
 export default function Home() {
   const [listening, setListening] = useState(false);
@@ -230,7 +52,8 @@ export default function Home() {
   const [arcs, setArcs] = useState<Arc[]>(fallbackArcs);
   const [applications, setApplications] = useState<ApplicationFlow[]>(fallbackApplications);
   const [loadingVoice, setLoadingVoice] = useState(false);
-  const [personaSaved, setPersonaSaved] = useState(false);
+  const [savingPersona, setSavingPersona] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [meshEnabled, setMeshEnabled] = useState(true);
   const [dataResidency, setDataResidency] = useState("Local-first");
   const [meshNodes, setMeshNodes] = useState<MeshNode[]>(fallbackMeshNodes);
@@ -320,10 +143,30 @@ export default function Home() {
     }, 400);
   };
 
-  const savePersona = (e: React.FormEvent) => {
+  const savePersona = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPersonaSaved(true);
-    setTimeout(() => setPersonaSaved(false), 3000);
+    setSavingPersona(true);
+    setSaveMessage(null);
+    try {
+      const res = await fetch("/api/orchestration/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          persona,
+          memoryMode,
+          meshEnabled,
+          dataResidency,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to persist persona");
+      const body = (await res.json()) as { status?: string };
+      setSaveMessage(body.status ?? "Persona synced with orchestration API.");
+    } catch {
+      setSaveMessage("Orchestration API unavailable; saved locally for now.");
+    } finally {
+      setSavingPersona(false);
+      setTimeout(() => setSaveMessage(null), 4000);
+    }
   };
 
   return (
@@ -443,11 +286,20 @@ export default function Home() {
             </select>
             <button
               type="submit"
+              disabled={savingPersona}
               className="w-full rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 px-4 py-2 text-sm font-semibold shadow-lg hover:shadow-xl focus-visible:outline focus-visible:ring-2 focus-visible:ring-pink-400"
             >
-              Save to orchestration API
+              {savingPersona ? "Saving..." : "Save to orchestration API"}
             </button>
-            {personaSaved && <p className="text-xs text-emerald-200">Persona synced with memory orchestrator.</p>}
+            {saveMessage && (
+              <p
+                className={`text-xs ${saveMessage.includes("unavailable") ? "text-amber-200" : "text-emerald-200"}`}
+                role="status"
+                aria-live="polite"
+              >
+                {saveMessage}
+              </p>
+            )}
           </form>
         </div>
       </section>
